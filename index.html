@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Is there more Hillary or Trump in the world?</title>
+    <style>
+      body { font: 100% Helvetica, Arial, sans-serif }
+      ul.percentage { width: 100%; float: left}
+      ul.percentage li { display: block; width: 0; padding: 10px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; float: left; clear: left }
+      ul.percentage li.hillary { background: #ff0066; color: #fff}
+      ul.percentage li.trump { background: #000; color: #fff}
+      ul.percentage li span { float: right; display: block}
+      ul.tweets { float: left; clear: both}
+      #stream { float: left; clear: both; width: 100%}
+      #stream ul { list-style: none}
+      #stream ul li { float: left; clear: left; width: 100%; border-bottom: 1px solid #ccc;: 5px; padding: 5px 0}
+      #stream ul li:nth-child(even) { background: #f8f5f6; }
+      #stream ul li img { float: left; margin-right: 10px; padding: 5px}
+      #hillaryrs { width: 45%; float: left }
+      #trumprs { width: 45%; float: right }
+    </style>
+  </head>
+  <body>
+    <h1>Is there more Hillary or Trump in the world?</h1>
+    <ul class="percentage">
+      <li class="hillary">
+        Hillary
+        <span>0</span>
+      </li>
+      <li class="trump">
+        Trump
+        <span>0</span>
+      </li>
+    </ul>
+    <section id="stream">
+      <section id="hillaryrs">
+        <h2>Some Hillary Tweets:</h2>
+        <ul></ul>
+      </section>
+      <section id="trumprs">
+        <h2>Some Trump Tweets:</h2>
+        <ul></ul>
+      </section>
+    </section>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect();
+      jQuery(function ($) { 
+        var loveCounter = $('li.hillary'),
+            hateCounter = $('li.trump'),
+            loveCounterPercentage = $('li.hillary span'),
+            hateCounterPercentage = $('li.trump span'),
+            hillaryrsList = $('#hillaryrs ul'),
+            trumprsList = $('#trumprs ul');
+        socket.on('percentages', function (data) {
+          loveCounter
+            .css("width", data.hillary + '%');
+          loveCounterPercentage
+            .text(Math.round(data.hillary * 10) / 10 + '%');
+          hateCounter
+            .css("width", data.trump + '%');
+          hateCounterPercentage
+            .text(Math.round(data.trump * 10) / 10 + '%');
+        });
+        socket.on('hillary', function (data) {
+          $('<img />')
+            .attr('src', data.avatar)
+            .load(function(){
+              hillaryrsList
+                .prepend($('<li>')
+                .prepend($('<p>').text(data.user + ': ' + data.text))
+                .prepend($(this)));
+            });
+        });
+        socket.on('trump', function (data) {
+          $('<img />')
+            .attr('src', data.avatar)
+            .load(function(){
+              trumprsList
+                .prepend($('<li>')
+                .prepend($('<p>').text(data.user + ': ' + data.text))
+                .prepend($(this)));
+            });
+        });
+      });
+    </script>
+  </body>
+</html>
